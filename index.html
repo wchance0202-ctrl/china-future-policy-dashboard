@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国未来发展方向 · 政策研究仪表盘（十五五 2026—2030 / 2035）</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  :root{
+    --navy:#1f3a5f; --navy2:#254b7a; --steel:#3d6098; --accent:#c9962f;
+    --ink:#1a2230; --muted:#61707f; --line:#e2e7ee; --bg:#f4f6f9; --card:#ffffff;
+    --sS:#1f3a5f; --sA:#3d6098; --sB:#8aa0bd;
+    --good:#2f7d55; --warn:#b5892a; --risk:#a4433a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.7;font-size:14px}
+  a{color:var(--steel);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+
+  /* header */
+  header{background:linear-gradient(180deg,#1f3a5f,#254b7a);color:#fff;padding:26px 0 20px}
+  header .wrap{display:flex;flex-direction:column;gap:6px}
+  .eyebrow{font-size:12px;letter-spacing:2px;color:#a9c1e0;text-transform:uppercase}
+  header h1{font-size:24px;font-weight:700;letter-spacing:.5px}
+  header .sub{font-size:13px;color:#cddaeb}
+  .disc{margin-top:8px;font-size:12px;color:#b8c8dd;border-left:3px solid var(--accent);padding-left:10px}
+
+  /* nav */
+  nav.tabs{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;padding:0 20px}
+  nav.tabs a{padding:13px 14px;font-size:13px;color:var(--muted);white-space:nowrap;border-bottom:2px solid transparent}
+  nav.tabs a:hover{color:var(--navy);text-decoration:none}
+  nav.tabs a.active{color:var(--navy);border-bottom-color:var(--accent);font-weight:600}
+
+  section{padding:34px 0 8px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;border-bottom:2px solid var(--navy);padding-bottom:8px}
+  .sec-head h2{font-size:19px;color:var(--navy);font-weight:700}
+  .sec-head .en{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+  .note{font-size:12px;color:var(--muted);margin:6px 0 14px}
+
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 16px 14px;border-top:3px solid var(--accent)}
+  .kpi .v{font-size:26px;font-weight:700;color:var(--navy);line-height:1.2}
+  .kpi .v small{font-size:13px;font-weight:600;color:var(--steel)}
+  .kpi .k{font-size:12px;color:var(--muted);margin-top:4px}
+
+  .conclusion{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin-bottom:6px}
+  .conclusion p{margin-bottom:10px}
+  .conclusion b{color:var(--navy)}
+  .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:#eef2f7;color:var(--navy2);margin:2px 4px 2px 0;border:1px solid var(--line)}
+
+  /* ranking */
+  .layout{display:grid;grid-template-columns:1fr;gap:18px}
+  #rankChartBox{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
+  #rankChart{width:100%;height:560px}
+  .legend-grade{display:flex;gap:16px;flex-wrap:wrap;margin:8px 2px 0;font-size:12px;color:var(--muted)}
+  .legend-grade span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:11px;height:11px;border-radius:2px;display:inline-block}
+
+  /* detail */
+  #detailBox{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:0;overflow:hidden}
+  .detail-head{background:var(--navy);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .detail-head h3{font-size:18px}
+  .detail-head .tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .badge{font-size:12px;padding:3px 10px;border-radius:6px;font-weight:600}
+  .badge.grade{background:var(--accent);color:#2a2410}
+  .badge.score{background:#fff;color:var(--navy)}
+  .badge.lvl{background:#33507a;color:#dbe6f5;border:1px solid #4a6997}
+  .detail-body{padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:14px 26px}
+  .detail-body .full{grid-column:1/-1}
+  .field{border-left:3px solid var(--line);padding-left:12px}
+  .field h4{font-size:12px;color:var(--accent);letter-spacing:.5px;margin-bottom:3px;font-weight:700}
+  .field p{font-size:13.5px;color:#2b3543}
+  .detail-hint{padding:0 20px 16px;font-size:12px;color:var(--muted)}
+
+  /* matrix */
+  #matrixBox{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
+  #matrixChart{width:100%;height:520px}
+  .quad-legend{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+  .quad{border:1px solid var(--line);border-radius:6px;padding:10px;font-size:12px}
+  .quad b{display:block;color:var(--navy);margin-bottom:2px}
+  .quad.q1{border-top:3px solid var(--good)}
+  .quad.q2{border-top:3px solid var(--warn)}
+  .quad.q3{border-top:3px solid var(--steel)}
+  .quad.q4{border-top:3px solid var(--muted)}
+
+  /* tables */
+  .tbl-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+  .tbl-tools input,.tbl-tools select{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:#fff}
+  .tbl-tools input{min-width:230px}
+  .tbl-wrap{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{background:var(--navy);color:#fff;text-align:left;padding:10px 12px;font-weight:600;position:sticky;top:0;white-space:nowrap;font-size:12.5px}
+  tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:hover{background:#f7f9fc}
+  .rate{font-weight:700;font-size:12px;padding:2px 8px;border-radius:12px;display:inline-block;min-width:34px;text-align:center}
+  .r-high{background:#e6f0ea;color:var(--good)}
+  .r-mid{background:#fbf3e2;color:var(--warn)}
+  .r-midhigh{background:#eaf0f7;color:var(--steel)}
+  .r-low{background:#f2f0ee;color:var(--muted)}
+  .barrier-high{background:#f6e9e7;color:var(--risk);font-weight:700;padding:2px 8px;border-radius:12px;font-size:12px}
+  .barrier-mid{background:#fbf3e2;color:var(--warn);padding:2px 8px;border-radius:12px;font-size:12px}
+  .barrier-low{background:#e6f0ea;color:var(--good);padding:2px 8px;border-radius:12px;font-size:12px}
+  .quote{font-size:12.5px;color:#3a4757}
+  .src-doc{font-size:12px;color:var(--navy2);font-weight:600}
+  .lvl-tag{font-size:11px;padding:1px 7px;border-radius:4px;background:#eef2f7;color:var(--navy2);border:1px solid var(--line)}
+  .core-yes{color:var(--accent);font-weight:700}
+  .fail{color:var(--risk);font-weight:600}
+
+  /* career grid intro cards */
+  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  .mcard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;border-left:3px solid var(--steel)}
+  .mcard h4{font-size:14px;color:var(--navy);margin-bottom:6px}
+  .mcard ul{list-style:none;font-size:12.5px;color:#3a4757}
+  .mcard li{padding:2px 0 2px 14px;position:relative}
+  .mcard li:before{content:"▸";position:absolute;left:0;color:var(--accent)}
+
+  .gap-box{background:#fbf7ee;border:1px solid #ecdcbb;border-left:4px solid var(--accent);border-radius:6px;padding:14px 16px;font-size:13px}
+  .gap-box h4{color:var(--warn);margin-bottom:6px}
+  .gap-box ol{margin-left:18px}
+
+  .expand-btn{cursor:pointer;color:var(--steel);font-size:12px;font-weight:600;user-select:none}
+  .collapsed{display:none}
+
+  footer{margin-top:40px;background:var(--navy);color:#cddaeb;padding:22px 0;font-size:12px}
+  footer .wrap{display:flex;flex-direction:column;gap:6px}
+
+  #toTop{position:fixed;right:22px;bottom:22px;width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;border:none;cursor:pointer;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.2);display:none;z-index:60}
+  #toTop:hover{background:var(--navy2)}
+
+  @media(max-width:820px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .detail-body{grid-template-columns:1fr}
+    .cards3{grid-template-columns:1fr}
+    .quad-legend{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">POLICY RESEARCH DASHBOARD</div>
+    <h1>中国未来发展方向 · 政策研究仪表盘</h1>
+    <div class="sub">研究窗口：“十五五” 2026—2030 与 2035 远景目标　|　方法：政策强度七维评分模型　|　研究日期：2026-07-02</div>
+    <div class="disc">本页数据全部来自既有研究报告（《十五五规划建议》+四中全会《公报》+习近平《说明》+3份国务院“十五五”专项规划），不新增结论、不编造数据；报告未提供的精确数字以定性等级标注。</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="wrap" id="tabnav">
+    <a href="#s-conclusion" class="active">核心结论</a>
+    <a href="#s-rank">方向排名</a>
+    <a href="#s-detail">方向详情</a>
+    <a href="#s-matrix">分类矩阵</a>
+    <a href="#s-career">职业适配</a>
+    <a href="#s-evidence">政策证据</a>
+    <a href="#s-sources">文件来源</a>
+  </div>
+</nav>
+
+<!-- ========== 1. 核心结论 ========== -->
+<section id="s-conclusion">
+  <div class="wrap">
+    <div class="sec-head"><h2>一、核心结论</h2><span class="en">Key Judgements</span></div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="v">18</div><div class="k">报告已识别并评分的发展方向</div></div>
+      <div class="kpi"><div class="v">6 <small>成功 / 9 计划</small></div><div class="k">已获取官方文件（另3份年度文件缺失）</div></div>
+      <div class="kpi"><div class="v">92 <small>分 · S级</small></div><div class="k">政策强度最高：AI+ / 新型能源体系（并列）</div></div>
+      <div class="kpi"><div class="v">双碳·数据要素</div><div class="k">最适合商科/咨询切入的方向</div></div>
+    </div>
+
+    <div class="conclusion">
+      <p><b>一句话主线（“铁四角”）：</b>以「高水平科技自立自强」为引擎、以「现代化产业体系」为骨架、以「做强国内大循环（扩内需）」为底盘、以「统筹发展和安全」为托底，四者相互锁定，构成十五五的战略框架。</p>
+      <p><b>政策确定性最高（第一梯队 S 级，≥85分）：</b>①人工智能与智能经济（AI+）②新型能源体系与新型电力系统 ③集成电路与关键核心技术 ④高端制造与智能制造 ⑤绿色低碳/双碳 ⑥扩大内需与提振消费。判断“真看好”的三条件：进入顶层战略正文 + 绑定国家安全/科技自立自强 + 具备现实产业化基础。</p>
+      <p><b>产业化机会更强（市场已在、政策加持）：</b>智能制造“智改数转”、新型储能、创新药械、银发经济、文旅/服务消费。</p>
+      <p><b>适合商科/咨询/行研/风控/战略分析关注：</b>
+        <span class="pill">双碳/ESG·碳资产</span><span class="pill">数据要素·合规</span><span class="pill">扩内需·消费研究</span>
+        <span class="pill">现代服务业·产业研究</span><span class="pill">AI+应用层·产品</span><span class="pill">供应链风控</span>
+        <span class="pill">医药商业化·市场准入</span>
+        —— 商科进硬科技的姿势是“做技术的商业化伙伴”，而非做技术本身。</p>
+      <p><b>需谨慎（政策证据充分但产业化早期）：</b>未来产业中的量子科技、氢能与核聚变、脑机接口、6G——顶层点名但《说明》告诫“防止一哄而上”，宜作长期研究/期权，不宜近期 All-in。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 2. 方向排名 ========== -->
+<section id="s-rank">
+  <div class="wrap">
+    <div class="sec-head"><h2>二、未来重点方向排名</h2><span class="en">Ranking by Policy Strength</span></div>
+    <p class="note">按“政策强度总分（满分100）”排序，评分取自报告证据矩阵。点击任意条形 → 跳转查看该方向详情。</p>
+    <div id="rankChartBox">
+      <div id="rankChart"></div>
+      <div class="legend-grade">
+        <span><i class="dot" style="background:#1f3a5f"></i>S 级（≥85）国家长期战略+强支持</span>
+        <span><i class="dot" style="background:#3d6098"></i>A 级（75–84）政策强支持</span>
+        <span><i class="dot" style="background:#8aa0bd"></i>B 级（65–74）产业化机会</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 3. 方向详情 ========== -->
+<section id="s-detail">
+  <div class="wrap">
+    <div class="sec-head"><h2>三、方向详情</h2><span class="en">Direction Deep-Dive</span></div>
+    <div class="tbl-tools">
+      <select id="detailSelect"></select>
+      <span class="note" style="margin:0">← 下拉选择，或点击上方排名条形</span>
+    </div>
+    <div id="detailBox"></div>
+    <div class="detail-hint">证据编号为《建议》官方段落号（1)–(61)；产业化确定性/长期空间仅前10方向报告有明确标注，其余为报告定性描述归纳。</div>
+  </div>
+</section>
+
+<!-- ========== 4. 分类矩阵 ========== -->
+<section id="s-matrix">
+  <div class="wrap">
+    <div class="sec-head"><h2>四、方向分类矩阵</h2><span class="en">Policy Strength × Industrialization</span></div>
+    <p class="note">纵轴＝政策强度（评分，客观）；横轴＝产业化确定性（前10方向取报告明确标注，11–18方向由报告定性描述归纳，已在气泡备注标示“*归纳”）。气泡大小＝长期空间。</p>
+    <div id="matrixBox">
+      <div id="matrixChart"></div>
+      <div class="quad-legend">
+        <div class="quad q1"><b>① 高政策 + 高产业化 · 重点关注</b>AI+、新型能源、高端制造、扩内需、双碳、农业/粮食安全</div>
+        <div class="quad q2"><b>② 高政策 + 低产业化 · 长期观察</b>集成电路、数据要素、国家安全、新材料、未来产业</div>
+        <div class="quad q3"><b>③ 低政策 + 高产业化 · 市场驱动</b>现代服务业、文旅消费</div>
+        <div class="quad q4"><b>④ 低政策 + 低产业化 · 谨慎关注</b>（本轮方向均属国家鼓励，无落此象限者）</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 5. 职业适配 ========== -->
+<section id="s-career">
+  <div class="wrap">
+    <div class="sec-head"><h2>五、职业适配</h2><span class="en">Career Fit</span></div>
+
+    <div class="cards3">
+      <div class="mcard"><h4>适合商科 / 非技术背景</h4><ul>
+        <li>双碳/ESG：碳资产、绿色金融、碳足迹核算</li>
+        <li>数据要素：数据合规、资产入表、数商</li>
+        <li>扩内需/消费：消费研究、品牌、市场进入</li>
+        <li>AI+应用层：AI产品、行业解决方案、AI治理</li>
+        <li>银发经济、现代农业/县域、文旅</li>
+      </ul></div>
+      <div class="mcard"><h4>适合咨询 / 行研 / 风控 / 战略</h4><ul>
+        <li>集成电路：国产替代进度、供应链地图</li>
+        <li>AI+：落地ROI评估、AI治理咨询</li>
+        <li>新型能源：电力交易、储能经济性研究</li>
+        <li>国家安全/产业链：供应链风控、地缘研究</li>
+        <li>双碳/ESG、生物医药、数据要素</li>
+      </ul></div>
+      <div class="mcard"><h4>技术门槛过高（宜绕到商业侧）</h4><ul>
+        <li>集成电路（设计/制造/设备材料/EDA）</li>
+        <li>新材料（先进/半导体/关键战略材料）</li>
+        <li>未来产业：量子、核聚变、脑机、6G</li>
+        <li>高端装备/工业母机核心研发</li>
+        <li>创新药与医疗器械研发端</li>
+      </ul></div>
+    </div>
+
+    <p class="note">适配度等级取自报告《职业/行业机会》定性描述（高 / 较高 / 中 / 较低）；技术门槛按报告“对个人的启示”中壁垒描述归纳。</p>
+    <div class="tbl-wrap">
+      <table id="careerTable">
+        <thead><tr>
+          <th>方向</th><th>商科适配</th><th>咨询适配</th><th>行业研究适配</th><th>风控/合规适配</th><th>技术门槛</th><th>推荐切入方式</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 6. 政策证据 ========== -->
+<section id="s-evidence">
+  <div class="wrap">
+    <div class="sec-head"><h2>六、政策证据</h2><span class="en">Policy Evidence</span></div>
+    <div class="tbl-tools">
+      <input type="text" id="evSearch" placeholder="🔍 搜索方向 / 文件 / 原文关键词…">
+      <select id="evFilter"><option value="">按方向筛选（全部）</option></select>
+      <span class="note" style="margin:0" id="evCount"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="evTable">
+        <thead><tr>
+          <th>方向</th><th>政策文件</th><th>发布机构</th><th>时间</th><th>核心原文 / 摘要</th><th>支撑的判断</th><th>来源</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 7. 文件来源 ========== -->
+<section id="s-sources">
+  <div class="wrap">
+    <div class="sec-head"><h2>七、文件来源</h2><span class="en">Source Documents</span></div>
+    <p class="note">优先展示核心顶层文件。含本轮未获取文件及其失败原因（诚实披露）。</p>
+    <div class="tbl-wrap">
+      <table id="srcTable">
+        <thead><tr>
+          <th>文件名称</th><th>发布机构</th><th>时间</th><th>层级</th><th>涉及主题</th><th>核心</th><th>来源 / 状态</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="gap-box" style="margin-top:16px">
+      <h4>⚠ 数据缺口与可信度分层（报告原文披露）</h4>
+      <p><b>证据最扎实（三份顶层文件交叉印证）：</b>科技自立自强（集成电路/工业母机/基础软件/先进材料）、AI+、新型能源体系、粮食与产业链安全、扩内需/提振消费。</p>
+      <p><b>证据偏定性/早期（需谨慎）：</b>未来产业中的量子科技、氢能与核聚变、脑机接口、6G——顶层点名但处“探索/前瞻”阶段，无量化目标与重大工程。</p>
+      <p><b>本轮未获取、需补充验证：</b></p>
+      <ol>
+        <li>2026年《政府工作报告》——检索日索引页404、检索工具报错，未定位全文直达URL；</li>
+        <li>2025年中央经济工作会议通稿——news.cn/gov.cn直达URL多次404；</li>
+        <li>国务院《关于深入实施“人工智能+”行动的意见》——目标URL返回404。</li>
+      </ol>
+      <p style="margin-top:6px">影响：具体量化指标（GDP增速、研发强度、粮食产能斤数、专项债/超长期国债投向额度）主要落在《纲要》与年度文件，故本仪表盘的“量化目标”维度整体保守；方向性排序稳健，但涉及具体数字的结论应待相关文件发布后二次校验。</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>中国未来发展方向 · 政策研究仪表盘　|　数据来源：既有研究报告（china_future_directions_report.md / career_implications.md / metadata.csv）</div>
+    <div>本页面依赖 CDN（jsDelivr 上的 ECharts 5.4.3）渲染图表；若离线打开，图表区可能空白，其余文字与表格模块不受影响。</div>
+    <div>免责：政策鼓励 ≠ 商业必然成功；长期战略方向 ≠ 短期投资热点。所有判断以官方政策方向为依据，不构成投资建议。</div>
+  </div>
+</footer>
+
+<button id="toTop" title="返回顶部">↑</button>
+
+<script>
+/* =====================  数据（全部来自既有报告）  ===================== */
+const DIRS = [
+ {r:1, name:"人工智能与智能经济（AI+）", score:92, grade:"S", level:"政策强支持方向",
+  cert:"高", certNote:"", space:"极大",
+  oneLine:"唯一被赋予“赋能千行百业/抢占制高点”的技术总纲",
+  why:"AI是新一轮科技革命的“通用目的技术”，既是产业升级引擎，又关乎科研范式、社会治理与国家竞争主动权；《建议》给它的定位在所有技术方向中最高。",
+  evidence:"《建议》(14)“全面实施‘人工智能+’行动……抢占产业应用制高点，全方位赋能千行百业。加强人工智能治理”；(10)“建设全国一体化算力网”；(50)列入新兴领域国家安全能力建设。",
+  keywords:"人工智能+、大模型、算力网、智能体、AI治理、AI+制造/医疗/教育/政务",
+  chain:"上游（算力芯片、智算中心、数据）→ 中游（大模型、框架、数据标注、MLOps）→ 下游（行业应用/智能体、AI+千行百业）",
+  benefitInd:"算力与芯片、云厂商、行业大模型与应用集成商、数据服务、AI+垂直（医疗影像、工业质检、法律/金融文书）",
+  benefitFirm:"算力/芯片厂商、云与大模型厂商、行业应用集成商、数据服务商、AI+X垂直创业公司",
+  logic:"从“训练大模型”转向“行业落地与ROI”，谁能把AI嵌进真实业务流谁受益；算力国产化+能耗约束是长期变量。",
+  risk:"算力/先进制程受外部管制；商业化ROI证伪；治理与合规收紧；概念泡沫。",
+  career:"最值得长期投入。技术岗壁垒高；但AI产品经理、行业解决方案、数据合规、AI治理/伦理、行业研究等“AI+X”交叉岗位对商科/复合背景友好。"},
+
+ {r:2, name:"新型能源体系与新型电力系统", score:92, grade:"S", level:"政策强支持方向",
+  cert:"高", certNote:"", space:"极大",
+  oneLine:"战新+能源安全交点，储能/电网确定性高",
+  why:"能源安全是发展与安全的交汇点；双碳倒逼电力系统重构，储能/电网/多能互补是硬需求。",
+  evidence:"《建议》(46)“构建新型电力系统……风光水核多能并举……科学布局抽水蓄能，大力发展新型储能，加快智能电网和微电网”；(45)“新型能源体系初步建成”；(8)新能源入战新集群、氢能与核聚变入未来产业。",
+  keywords:"新型电力系统、新型储能、抽水蓄能、虚拟电厂、智能电网、氢能、核聚变、电价机制",
+  chain:"发电（风光水核）→ 储能（电化学/长时/抽蓄）→ 电网（特高压、配网、微电网、虚拟电厂）→ 用能电气化",
+  benefitInd:"储能系统与电池、电力设备、电网数字化、新能源运营商、氢能装备、电力交易/售电",
+  benefitFirm:"储能与电池企业、电力设备商、电网数字化服务商、新能源运营商、售电/电力交易公司",
+  logic:"储能从“政策驱动”转“经济性驱动”；电力市场化改革释放电价与交易机会。",
+  risk:"储能产能过剩与价格战；电价机制改革滞后；氢能/核聚变短期难产业化。",
+  career:"确定性强。电力市场交易、能源咨询、碳资产/绿电、ESG对商科友好；储能/氢能技术岗壁垒高。"},
+
+ {r:3, name:"集成电路与关键核心技术攻关", score:90, grade:"S", level:"政策强支持方向",
+  cert:"中高", certNote:"", space:"大",
+  oneLine:"举国体制+超常规，产业链安全内核",
+  why:"“卡脖子”是最大产业安全短板；《建议》以“新型举国体制+超常规措施”明确要“决定性突破”。",
+  evidence:"《建议》(11)“全链条推动集成电路、工业母机、高端仪器、基础软件、先进材料、生物制造等关键核心技术攻关取得决定性突破”；(50)产业链供应链安全、关键产业备份、战略性矿产储备。",
+  keywords:"集成电路、半导体设备/材料、EDA、工业母机、基础软件、国产替代、产业链自主可控",
+  chain:"设计（EDA/IP）→ 制造（晶圆、设备、材料）→ 封测 → 国产替代应用",
+  benefitInd:"半导体设备与零部件、材料、EDA、成熟制程代工、工业软件、高端数控机床",
+  benefitFirm:"半导体设备/零部件商、材料商、EDA厂商、成熟制程代工、工业软件与机床企业",
+  logic:"国产替代从“可用”走向“好用”；设备材料环节国产化率提升最确定。",
+  risk:"外部管制升级；先进制程突破难度大；重复投资与结构性过剩。",
+  career:"技术壁垒极高，非技术背景不宜直接进入研发；但产业研究、投融资、供应链/国产替代咨询需求旺盛。"},
+
+ {r:4, name:"高端制造与智能制造", score:90, grade:"S", level:"政策强支持方向",
+  cert:"高", certNote:"", space:"大",
+  oneLine:"现代化产业体系骨干，“保持制造业合理比重”",
+  why:"制造业是立国之本；《建议》罕见提出“保持制造业合理比重”，防止过早去工业化。",
+  evidence:"《建议》三部分总纲“智能化、绿色化、融合化……以先进制造业为骨干”；(7)“制造业数智化转型，发展智能制造、绿色制造、服务型制造……先进制造业集群”。",
+  keywords:"智能制造、数字化车间、工业互联网、先进制造业集群、高端装备、服务型制造",
+  chain:"装备（机器人、机床、检测）→ 软件（MES/工业软件/工业互联网）→ 集成与改造服务 → 制造场景",
+  benefitInd:"工业自动化、工业机器人、工业软件、系统集成商、智能工厂改造服务",
+  benefitFirm:"工业自动化与机器人企业、工业软件商、智能制造系统集成/改造服务商",
+  logic:"存量产线“智改数转”是最大确定性市场；AI+制造叠加放大。",
+  risk:"中小企业改造投入回报周期长；低端产能过剩。",
+  career:"确定性高、面广。智能制造解决方案、工业数字化咨询、供应链管理对复合背景友好。"},
+
+ {r:5, name:"绿色低碳与双碳", score:86, grade:"S", level:"国家长期战略方向",
+  cert:"中高", certNote:"", space:"大",
+  oneLine:"碳达峰硬时点，碳市场/碳足迹制度化",
+  why:"碳达峰是对国际社会的硬承诺与硬时点；绿色转型是新增长动能。",
+  evidence:"《建议》(47)“积极稳妥推进和实现碳达峰……碳排放双控……扩大全国碳市场……产品碳足迹”；(48)“绿色低碳发展的财税、金融、投资、价格政策”。",
+  keywords:"碳达峰、碳双控、全国碳市场、CCER、产品碳足迹、绿色金融、循环经济",
+  chain:"减排技术 → 碳计量/核算 → 碳交易/碳金融 → 绿色认证与咨询",
+  benefitInd:"碳资产管理、环境咨询、绿色金融、节能改造、循环经济、CCUS",
+  benefitFirm:"碳资产管理公司、环境/ESG咨询、绿色金融机构、节能改造与循环经济企业",
+  logic:"碳市场扩围+碳足迹制度→催生大量核算、认证、交易、合规服务需求。",
+  risk:"碳价偏低、政策节奏“积极稳妥”偏谨慎；部分绿色项目经济性不足。",
+  career:"对商科/金融/咨询极友好——碳资产、ESG、绿色金融、碳足迹核算是明确的新职业带。"},
+
+ {r:6, name:"扩大内需与提振消费", score:85, grade:"S", level:"国家长期战略方向",
+  cert:"高", certNote:"", space:"大",
+  oneLine:"十五五底盘，“居民消费率明显提高”",
+  why:"外部不确定性上升，必须“以国内大循环稳定性对冲国际循环不确定性”（《说明》）。",
+  evidence:"《建议》(15)“深入实施提振消费专项行动……扩大服务消费……培育国际消费中心城市”；五部分“扩大内需战略基点……投资于物和投资于人”；(6)/《说明》“居民消费率明显提高”。",
+  keywords:"提振消费、服务消费、投资于人、国际消费中心城市、入境消费、消费新场景",
+  chain:"服务消费（文旅、体育、健康、教育培训）+ 商品消费升级 + 消费基础设施",
+  benefitInd:"服务消费平台、文旅体育、银发/母婴、首发经济、免税/入境消费",
+  benefitFirm:"服务消费平台、文旅体育运营、银发/母婴品牌、免税与入境消费企业",
+  logic:"政策从“投资于物”向“投资于人”倾斜，服务消费扩容确定。",
+  risk:"居民收入与预期是根本约束；见效慢。",
+  career:"面向商科最广的赛道——消费研究、品牌、渠道、市场进入策略。"},
+
+ {r:7, name:"现代农业与乡村振兴/粮食安全", score:85, grade:"S", level:"国家长期战略方向",
+  cert:"中高", certNote:"", space:"大",
+  oneLine:"粮食安全=国家安全，含“千亿斤”工程",
+  why:"粮食安全是“国之大者”，等同国家安全；农业农村现代化关系现代化全局。",
+  evidence:"《建议》(25)“新一轮千亿斤粮食产能提升行动……种业振兴……高标准农田”；(50)“确保粮食……安全”；(26)“发展县域经济……一二三产业融合”。",
+  keywords:"粮食产能、种业振兴、高标准农田、智慧农业、县域经济、联农带农",
+  chain:"种业与农资 → 高标准农田/农机/智慧农业 → 农产品加工/品牌 → 县域流通",
+  benefitInd:"种业、智慧农业与农机、农产品加工品牌、农业社会化服务、县域冷链",
+  benefitFirm:"种业公司、智慧农业与农机企业、农产品加工品牌、农业社会化服务与县域冷链",
+  logic:"种业与高标准农田是确定投入；县域消费与产业是增量蓝海。",
+  risk:"农业回报周期长、天气与价格波动；土地制度改革渐进。",
+  career:"县域/乡村是被低估的下沉市场机会；农业产业化运营、品牌、供应链适合商科返乡创业。"},
+
+ {r:8, name:"数字中国与数据要素", score:83, grade:"A", level:"政策强支持方向",
+  cert:"中", certNote:"", space:"大",
+  oneLine:"数据要素上升为“基础制度”",
+  why:"数据是新生产要素；数据要素市场是制度型红利。",
+  evidence:"《建议》(14)“健全数据要素基础制度，建设……全国一体化数据市场……实施工业互联网创新发展工程”；(23)数据跨境流动。",
+  keywords:"数据要素、数据确权、数据交易所、数据资产入表、可信数据空间、工业互联网",
+  chain:"数据采集/治理 → 确权/评估/入表 → 交易/流通 → 应用",
+  benefitInd:"数据服务与治理、数据交易所、数商、数据合规/安全",
+  benefitFirm:"数据治理服务商、数据交易所、数商、数据合规与安全公司",
+  logic:"数据资产入表+交易机制→催生数据评估、合规、经纪等新职业。",
+  risk:"确权与定价机制未成熟；隐私与安全约束。",
+  career:"制度红利期，数据合规、数据资产、数商运营对商科/法律友好。"},
+
+ {r:9, name:"生物医药与生命健康", score:83, grade:"A", level:"政策强支持方向",
+  cert:"中高", certNote:"", space:"大",
+  oneLine:"产业+民生双轮，创新药械+生物制造",
+  why:"老龄化刚需+创新药出海+生物制造，产业与民生双重价值。",
+  evidence:"《建议》(42)“支持创新药和医疗器械发展……中医药传承创新……全民健康数智化”；(11)(8)“生物制造”攻关与未来产业。",
+  keywords:"创新药、医疗器械、生物制造、中医药、AI制药、全民健康数智化",
+  chain:"研发（创新药/械、CXO）→ 生产（生物制造）→ 支付（医保）→ 服务",
+  benefitInd:"创新药械、CXO、生物制造、医疗数字化、中医药",
+  benefitFirm:"创新药械企业、CXO、生物制造公司、医疗数字化与中医药企业",
+  logic:"创新药出海+医保支付改革+AI制药提效。",
+  risk:"集采压价、审评与支付政策变动、研发高失败率。",
+  career:"研发壁垒高；医药商业化、市场准入、医药投资、卫生经济对商科友好。"},
+
+ {r:10, name:"国家安全与产业链供应链安全", score:83, grade:"A", level:"国家长期战略方向",
+  cert:"中", certNote:"", space:"大",
+  oneLine:"贯穿全篇的元主线，为硬科技托底",
+  why:"“统筹发展和安全”是六大原则之一，是所有硬科技的托底逻辑。",
+  evidence:"《建议》(50)“关键产业备份、国家战略腹地建设、战略性矿产储备”；(50)网络/数据/AI/生物/核/太空/深海/极地/低空新兴领域安全；六部分“以新安全格局保障新发展格局”。",
+  keywords:"产业链安全、关键产业备份、战略腹地、战略性矿产、应急、新兴领域安全",
+  chain:"关键环节国产替代 → 战略储备 → 应急与安全服务",
+  benefitInd:"关键矿产、战略物资储备、网络安全、应急装备、供应链风控",
+  benefitFirm:"关键矿产与储备企业、网络安全公司、应急装备商、供应链风控服务",
+  logic:"安全冗余投资长期化；供应链“备份”成刚需。",
+  risk:"投入以“备份/冗余”为主，短期经济回报弱。",
+  career:"供应链风控、地缘/政策研究、合规是稳定的长期方向。"},
+
+ {r:11, name:"新材料", score:80, grade:"A", level:"政策强支持方向",
+  cert:"中", certNote:"*归纳（报告述“研发慢、验证周期长”）", space:"大",
+  oneLine:"硬科技上游，隐性受益面最广",
+  why:"《建议》(11)“先进材料”攻关、(8)战新集群。是所有硬科技上游。",
+  evidence:"《建议》(11)先进材料关键核心技术攻关；(8)新材料列入战略性新兴产业集群。",
+  keywords:"先进材料、关键战略材料、第三代半导体材料、高性能纤维",
+  chain:"（报告未细拆）基础材料研发 → 量产验证 → 下游硬科技应用",
+  benefitInd:"特种材料、半导体材料、电池材料、高端化工",
+  benefitFirm:"特种材料、半导体材料、电池材料、高端化工企业",
+  logic:"作为几乎所有硬科技方向的上游，隐性受益面广（报告定性）。",
+  risk:"研发慢、验证周期长。",
+  career:"技术壁垒高，适合作长期研究主题与产业投资跟踪。"},
+
+ {r:12, name:"教育强国/科技人才一体", score:78, grade:"A", level:"政策强支持方向",
+  cert:"中高", certNote:"*归纳（已落地国家级专项规划）", space:"大",
+  oneLine:"已落地国家级专项规划",
+  why:"“教育科技人才一体”是十五五新提法；已落地《教育发展“十五五”规划》。",
+  evidence:"《建议》(13)(39) + 已发布《教育发展“十五五”规划》（国务院，2026-06）。",
+  keywords:"高教提质扩容、职教、教育数字化、AI教育",
+  chain:"（报告未细拆）教育数字化平台 → 职教产教融合 → AI+教育应用",
+  benefitInd:"职教、教育数字化、AI+教育",
+  benefitFirm:"职业教育机构、教育数字化平台、AI+教育服务商",
+  logic:"AI教育/职教是新增长点（报告定性）。",
+  risk:"报告未专门列示（教育以民生/公共属性为主）。",
+  career:"教育数字化、职教产教融合运营对商科友好。"},
+
+ {r:13, name:"银发经济与健康养老", score:77, grade:"A", level:"产业化机会方向",
+  cert:"中高", certNote:"*归纳（人口结构刚需、服务业属性）", space:"大",
+  oneLine:"人口结构刚需，服务业属性强",
+  why:"人口老龄化是最确定的长期慢变量；《建议》明确“发展银发经济”。",
+  evidence:"《建议》(43)“发展银发经济……长期护理保险……养老服务网络……开发老年人力资源”。",
+  keywords:"银发经济、养老服务、长期护理保险、适老化、老年人力资源",
+  chain:"养老服务 → 适老产品 → 长护险 → 老年文娱/教育",
+  benefitInd:"养老服务、适老产品、长护险、老年文娱/教育",
+  benefitFirm:"养老服务运营商、适老产品企业、长护险相关机构、老年文娱教育机构",
+  logic:"确定性来自人口结构而非补贴（报告定性）。",
+  risk:"需注意老年群体支付能力约束。",
+  career:"服务业属性强、非技术门槛低，适合商科创业与运营。"},
+
+ {r:14, name:"未来产业（量子/核聚变/脑机/具身智能/6G）", score:76, grade:"A", level:"短期热点/需谨慎方向",
+  cert:"低", certNote:"*归纳（报告明示“产业化早期、缺量化目标与重大工程”）", space:"极大",
+  oneLine:"顶层点名但处培育期，防一哄而上",
+  why:"国家长期战略鼓励、顶层逐一点名；但《说明》第三点明确“探索……防止一哄而上”，产业化早期。",
+  evidence:"《建议》(8)逐一点名量子科技、生物制造、氢能和核聚变能、脑机接口、具身智能、6G；《说明》第三点“因地制宜……防止一哄而上”。",
+  keywords:"量子科技、核聚变、脑机接口、具身智能/人形机器人、6G",
+  chain:"（报告述处“探索多元技术路线、商业模式”阶段，未工程化）",
+  benefitInd:"（早期）前沿科研机构、相关装备与元器件、具身智能/机器人（相对更近）",
+  benefitFirm:"前沿科技创业公司、科研院所转化企业、人形机器人/具身智能公司",
+  logic:"适合作长期研究主题；人形机器人/具身智能因与制造业结合，产业化相对更近。",
+  risk:"缺量化目标与重大工程，商业模式未定；概念层需警惕炒作。",
+  career:"适合作长期研究主题，不适合非技术背景近期All-in。"},
+
+ {r:15, name:"城市更新与新型城镇化", score:76, grade:"A", level:"产业化机会方向",
+  cert:"中", certNote:"*归纳（与地方债/房地产调整相连）", space:"大",
+  oneLine:"存量时代主线，连房地产新模式",
+  why:"存量时代主线，与房地产“止跌回稳/新模式”相连。",
+  evidence:"《建议》(31)“大力实施城市更新”；(41)“好房子/房屋品质提升工程”。",
+  keywords:"城市更新、好房子、都市圈同城化、县城城镇化、农业转移人口市民化",
+  chain:"（报告述）城市更新 → 存量改造 → 物业提质 → 平急两用设施",
+  benefitInd:"城市更新、存量改造、物业提质、平急两用设施",
+  benefitFirm:"城市更新与存量改造企业、物业提质服务、城市运营商",
+  logic:"存量改造成为地产新主线（报告定性）。",
+  risk:"与地方债、房地产调整相连。",
+  career:"适合工程/地产/城市运营背景；商科可切入城市更新投融资与运营。"},
+
+ {r:16, name:"低空经济与商业航天/卫星互联网", score:75, grade:"A", level:"政策强支持方向",
+  cert:"中", certNote:"*归纳（基础设施与法规待完善、重资产）", space:"大",
+  oneLine:"战新集群+太空/低空安全",
+  why:"新兴且政策明确；(8)战新集群点名低空经济、航空航天，(50)太空/低空安全，三部分“航天强国”。",
+  evidence:"《建议》(8)战新集群点名低空经济、航空航天；(50)太空/低空安全；三部分“航天强国”。",
+  keywords:"低空经济、eVTOL、无人机、空管、商业航天、卫星互联网",
+  chain:"低空（eVTOL、无人机、低空基础设施、空管）；商业航天（卫星制造、发射、卫星互联网、应用）",
+  benefitInd:"eVTOL/无人机、低空基础设施与空管、卫星制造与发射、卫星互联网应用",
+  benefitFirm:"eVTOL/无人机企业、低空基建与空管服务、卫星制造/发射、卫星应用公司",
+  logic:"政策明确，适合早期布局与产业研究。",
+  risk:"低空基础设施与法规待完善；商业航天重资产。",
+  career:"新兴且政策明确，适合早期布局与产业研究；技术岗壁垒高。"},
+
+ {r:17, name:"现代服务业", score:71, grade:"B", level:"产业化机会方向",
+  cert:"高", certNote:"*归纳（扩内需+开放支撑、市场已在）", space:"大",
+  oneLine:"扩内需+开放，商科最友好",
+  why:"扩内需与开放双重支撑；生产性服务业向价值链高端延伸。",
+  evidence:"《建议》(9)“服务业扩能提质……生产性服务业向价值链高端延伸……服务业数智化”。",
+  keywords:"生产性服务业、现代物流、服务贸易、服务业数智化",
+  chain:"（报告述）研究/咨询/检验检测/现代物流/供应链金融等生产性服务",
+  benefitInd:"研究与咨询、检验检测、现代物流、供应链金融",
+  benefitFirm:"管理咨询/行业研究机构、检验检测机构、现代物流与供应链金融公司",
+  logic:"是把“政策方向”变“职业”的最佳载体（报告定性）。",
+  risk:"报告未专门列示（属稳态扩张型赛道）。",
+  career:"生产性服务业（研究、咨询、检验检测、现代物流、供应链金融）对商科最友好。"},
+
+ {r:18, name:"文化强国与文旅消费", score:67, grade:"B", level:"产业化机会方向",
+  cert:"中高", certNote:"*归纳（民生/消费属性强、稳态消费）", space:"中",
+  oneLine:"稳态消费，产业政策相对温和",
+  why:"民生/消费属性强，产业政策相对温和，更像稳态消费而非战略突破口。",
+  evidence:"《建议》(35)“旅游强国……文旅深度融合……新型文化业态”。",
+  keywords:"文化产业、文旅深度融合、旅游强国、新型文化业态",
+  chain:"（报告未细拆）文化内容 → 文旅项目 → 文化科技融合业态",
+  benefitInd:"文旅、文化科技融合、新型文化业态",
+  benefitFirm:"文旅运营、内容/IP公司、文化科技融合企业",
+  logic:"扩内需受益方向，但更接近“稳态消费”（报告定性）。",
+  risk:"政策强度弱于硬科技主线。",
+  career:"文旅、文化科技融合适合内容/运营背景，但政策强度弱于硬科技主线。"}
+];
+
+/* 职业适配（等级取自 career_implications.md 定性描述 / 报告“对个人的启示”） */
+const CAREER = [
+ {name:"人工智能与智能经济（AI+）", biz:"较高", con:"高", res:"高", risk:"较高", barrier:"高", entry:"AI产品经理、行业解决方案、AI治理/合规、行业研究"},
+ {name:"新型能源体系与新型电力系统", biz:"较高", con:"高", res:"高", risk:"中", barrier:"高", entry:"电力市场交易、能源咨询、碳资产/绿电、ESG"},
+ {name:"集成电路与关键核心技术攻关", biz:"较低", con:"高", res:"高", risk:"中", barrier:"高", entry:"产业研究、投融资、供应链/国产替代咨询（绕开研发）"},
+ {name:"高端制造与智能制造", biz:"较高", con:"高", res:"较高", risk:"中", barrier:"较高", entry:"智能制造解决方案、工业数字化咨询、供应链管理"},
+ {name:"绿色低碳与双碳", biz:"高", con:"高", res:"高", risk:"高", barrier:"较低", entry:"碳资产、ESG、绿色金融、碳足迹核算、环境咨询"},
+ {name:"扩大内需与提振消费", biz:"高", con:"较高", res:"高", risk:"中", barrier:"较低", entry:"消费研究、品牌、渠道、市场进入策略"},
+ {name:"现代农业与乡村振兴/粮食安全", biz:"较高", con:"中", res:"较高", risk:"中", barrier:"中", entry:"农业产业化运营、县域供应链、农产品品牌"},
+ {name:"数字中国与数据要素", biz:"高", con:"较高", res:"较高", risk:"高", barrier:"中", entry:"数据合规、数据资产入表、数商运营"},
+ {name:"生物医药与生命健康", biz:"较高", con:"较高", res:"高", risk:"较高", barrier:"高", entry:"医药商业化、市场准入、医药投资、卫生经济"},
+ {name:"国家安全与产业链供应链安全", biz:"中", con:"高", res:"高", risk:"高", barrier:"中", entry:"供应链风控、地缘/政策研究、合规"},
+ {name:"新材料", biz:"较低", con:"较高", res:"高", risk:"中", barrier:"高", entry:"长期研究主题、产业投资跟踪（绕开研发）"},
+ {name:"教育强国/科技人才一体", biz:"较高", con:"中", res:"较高", risk:"中", barrier:"中", entry:"教育数字化、职教产教融合运营"},
+ {name:"银发经济与健康养老", biz:"高", con:"中", res:"较高", risk:"中", barrier:"较低", entry:"养老服务运营、适老产品、长护险、老年文娱教育"},
+ {name:"未来产业（量子/核聚变/脑机/具身智能/6G）", biz:"较低", con:"较高", res:"高", risk:"中", barrier:"高", entry:"长期研究/期权布局（不宜非技术近期All-in）"},
+ {name:"城市更新与新型城镇化", biz:"中", con:"中", res:"中", risk:"中", barrier:"中", entry:"城市更新投融资与运营（工程/地产背景更佳）"},
+ {name:"低空经济与商业航天/卫星互联网", biz:"中", con:"较高", res:"较高", risk:"中", barrier:"高", entry:"早期布局、产业研究（技术岗壁垒高）"},
+ {name:"现代服务业", biz:"高", con:"高", res:"高", risk:"较高", barrier:"较低", entry:"行业研究、管理咨询、检验检测、供应链金融"},
+ {name:"文化强国与文旅消费", biz:"较高", con:"中", res:"中", risk:"较低", barrier:"较低", entry:"文旅项目策划、内容运营、文化科技融合"}
+];
+
+/* 政策证据（源自报告“官方文件证据”栏 + 证据矩阵） */
+const EVIDENCE = [
+ {dir:"人工智能与智能经济（AI+）", doc:"《建议》(14)", org:"中共中央", date:"2025-10", quote:"全面实施“人工智能+”行动……抢占人工智能产业应用制高点，全方位赋能千行百业。加强人工智能治理", support:"AI是政策位势最高的技术总纲", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"人工智能与智能经济（AI+）", doc:"《建议》(10)", org:"中共中央", date:"2025-10", quote:"建设全国一体化算力网", support:"算力作为AI新型基础设施", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"新型能源体系与新型电力系统", doc:"《建议》(46)", org:"中共中央", date:"2025-10", quote:"构建新型电力系统……风光水核多能并举……科学布局抽水蓄能，大力发展新型储能，加快智能电网和微电网", support:"储能/电网是硬需求、确定性高", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"集成电路与关键核心技术攻关", doc:"《建议》(11)", org:"中共中央", date:"2025-10", quote:"全链条推动集成电路、工业母机、高端仪器、基础软件、先进材料、生物制造等关键核心技术攻关取得决定性突破", support:"举国体制+超常规攻关，产业链安全内核", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"高端制造与智能制造", doc:"《建议》(7)/三", org:"中共中央", date:"2025-10", quote:"智能化、绿色化、融合化……以先进制造业为骨干；制造业数智化转型，发展智能制造、绿色制造、服务型制造", support:"现代化产业体系骨干、保持制造业合理比重", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"绿色低碳与双碳", doc:"《建议》(47)", org:"中共中央", date:"2025-10", quote:"积极稳妥推进和实现碳达峰……碳排放双控……扩大全国碳市场……产品碳足迹", support:"碳达峰硬时点、碳市场制度化", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"扩大内需与提振消费", doc:"《建议》(15)", org:"中共中央", date:"2025-10", quote:"深入实施提振消费专项行动……扩大服务消费……培育国际消费中心城市", support:"扩内需是十五五底盘", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"扩大内需与提振消费", doc:"习近平《说明》第四点", org:"习近平/新华社", date:"2025-10", quote:"坚持做强国内大循环……以国内循环的稳定性对冲国际循环的不确定性", support:"做强国内大循环的战略动因", url:"https://www.12371.cn/2025/10/28/ARTI1761640597323164.shtml"},
+ {dir:"现代农业与乡村振兴/粮食安全", doc:"《建议》(25)", org:"中共中央", date:"2025-10", quote:"新一轮千亿斤粮食产能提升行动……种业振兴……高标准农田", support:"粮食安全含明确产能工程", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"数字中国与数据要素", doc:"《建议》(14)", org:"中共中央", date:"2025-10", quote:"健全数据要素基础制度，建设……全国一体化数据市场……实施工业互联网创新发展工程", support:"数据要素上升为基础制度", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"生物医药与生命健康", doc:"《建议》(42)", org:"中共中央", date:"2025-10", quote:"支持创新药和医疗器械发展……中医药传承创新……全民健康数智化", support:"产业+民生双轮", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"国家安全与产业链供应链安全", doc:"《建议》(50)", org:"中共中央", date:"2025-10", quote:"关键产业备份、国家战略腹地建设、战略性矿产储备；网络/数据/AI/生物/核/太空/深海/极地/低空新兴领域安全", support:"统筹发展和安全的元主线", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"新材料", doc:"《建议》(11)(8)", org:"中共中央", date:"2025-10", quote:"先进材料关键核心技术攻关；新材料列入战略性新兴产业集群", support:"硬科技上游，隐性受益面广", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"教育强国/科技人才一体", doc:"《建议》(13)(39)+《教育发展“十五五”规划》", org:"中共中央 / 国务院", date:"2025-10 / 2026-06", quote:"一体推进教育科技人才发展；高教提质扩容、职教、教育数字化", support:"已落地国家级专项规划", url:"https://www.gov.cn/zhengce/content/202606/content_7073640.htm"},
+ {dir:"银发经济与健康养老", doc:"《建议》(43)", org:"中共中央", date:"2025-10", quote:"发展银发经济……长期护理保险……养老服务网络……开发老年人力资源", support:"人口结构刚需", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"未来产业（量子/核聚变/脑机/具身智能/6G）", doc:"《建议》(8) / 习近平《说明》第三点", org:"中共中央 / 习近平", date:"2025-10", quote:"量子科技、生物制造、氢能和核聚变能、脑机接口、具身智能、6G……成为新的经济增长点；因地制宜……防止一哄而上", support:"顶层点名但产业化早期，需谨慎", url:"https://www.12371.cn/2025/10/28/ARTI1761640597323164.shtml"},
+ {dir:"城市更新与新型城镇化", doc:"《建议》(31)(41)", org:"中共中央", date:"2025-10", quote:"大力实施城市更新；建设安全舒适绿色智慧的“好房子”，实施房屋品质提升工程", support:"存量时代主线", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"低空经济与商业航天/卫星互联网", doc:"《建议》(8)(50)", org:"中共中央", date:"2025-10", quote:"加快新能源、新材料、航空航天、低空经济等战略性新兴产业集群发展；太空/低空新兴领域安全", support:"战新集群+太空/低空安全", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"现代服务业", doc:"《建议》(9)", org:"中共中央", date:"2025-10", quote:"服务业扩能提质行动……生产性服务业向专业化和价值链高端延伸……推进服务业数智化", support:"扩内需+开放，商科最友好", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"},
+ {dir:"文化强国与文旅消费", doc:"《建议》(35)", org:"中共中央", date:"2025-10", quote:"推进旅游强国建设……文旅深度融合……发展新型文化业态", support:"稳态消费，产业政策相对温和", url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml"}
+];
+
+/* 文件来源（源自 metadata.csv） */
+const SOURCES = [
+ {name:"中共中央关于制定国民经济和社会发展第十五个五年规划的建议", org:"中共中央（新华社授权发布）", date:"2025-10-28", lvl:"顶层战略", topic:"现代化产业体系/科技自立自强/新质生产力/未来产业/数字中国/AI+/新型能源/绿色低碳/扩内需/民生/区域/国家安全/乡村振兴", core:true, url:"https://www.12371.cn/2025/10/28/ARTI1761640401107119.shtml", status:"成功"},
+ {name:"习近平：关于《建议》的说明", org:"习近平 / 新华社", date:"2025-10-28", lvl:"顶层战略", topic:"规划起草说明/发展目标/高质量发展/新质生产力/共同富裕/统筹发展与安全", core:true, url:"https://www.12371.cn/2025/10/28/ARTI1761640597323164.shtml", status:"成功"},
+ {name:"二十届四中全会公报", org:"中共中央 / 新华社", date:"2025-10-23", lvl:"顶层战略", topic:"四中全会公报/十五五主要目标/战略任务", core:true, url:"https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml", status:"成功"},
+ {name:"教育发展“十五五”规划", org:"国务院", date:"2026-06", lvl:"部委专项", topic:"教育强国/高教提质扩容/职教/教师队伍/教育数字化/AI教育", core:false, url:"https://www.gov.cn/zhengce/content/202606/content_7073640.htm", status:"成功"},
+ {name:"实施就业优先战略“十五五”规划", org:"国务院", date:"2026-06", lvl:"部委专项", topic:"就业优先/高校毕业生就业/新就业形态/灵活就业/银发人力资源/技能培训", core:false, url:"https://www.gov.cn/zhengce/content/202606/content_7072481.htm", status:"成功"},
+ {name:"体育强国建设“十五五”规划", org:"国务院", date:"2026-07", lvl:"部委专项", topic:"体育强国/群众体育/竞技体育/体育产业/文旅消费", core:false, url:"https://www.gov.cn/zhengce/content/202607/content_7074092.htm", status:"成功"},
+ {name:"2026年《政府工作报告》", org:"国务院", date:"2026-03", lvl:"年度工作", topic:"年度经济社会发展目标/宏观政策", core:true, url:"", status:"未获取：索引页404、检索工具报错"},
+ {name:"2025年中央经济工作会议通稿", org:"中共中央/国务院/新华社", date:"2025-12（推定）", lvl:"年度工作", topic:"年度经济工作定调/宏观政策/扩内需/新质生产力", core:true, url:"", status:"未获取：直达URL多次404"},
+ {name:"国务院《关于深入实施“人工智能+”行动的意见》", org:"国务院", date:"2025（推定）", lvl:"部委专项", topic:"人工智能+/算力/千行百业赋能", core:false, url:"", status:"未获取：目标URL 404"}
+];
+
+/* =====================  渲染逻辑  ===================== */
+const gradeColor = g => g==="S" ? "#1f3a5f" : g==="A" ? "#3d6098" : "#8aa0bd";
+const rateClass = v => v==="高"?"r-high":v==="较高"?"r-midhigh":v==="中"?"r-mid":"r-low";
+const barrierClass = v => v==="高"?"barrier-high":(v==="较高"?"barrier-mid":(v==="中"?"barrier-mid":"barrier-low"));
+const esc = s => (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+/* --- 排名图 --- */
+let rankChart, matrixChart;
+function renderRank(){
+  rankChart = echarts.init(document.getElementById('rankChart'));
+  const data = DIRS.slice().reverse(); // 低分在下→高分在上
+  const opt = {
+    grid:{left:220, right:60, top:10, bottom:20},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:p=>{const d=DIRS.find(x=>x.name===p[0].name);return `<b>${p[0].name}</b><br/>政策强度：<b>${d.score}</b> 分（${d.grade}级）<br/>${d.oneLine}<br/><span style="color:#888">点击查看详情</span>`}},
+    xAxis:{type:'value', max:100, splitLine:{lineStyle:{color:'#eef1f5'}}, axisLabel:{color:'#888'}},
+    yAxis:{type:'category', data:data.map(d=>d.name),
+      axisLabel:{color:'#2b3543', fontSize:12, width:200, overflow:'truncate'},
+      axisTick:{show:false}, axisLine:{lineStyle:{color:'#ccc'}}},
+    series:[{
+      type:'bar', data:data.map(d=>({value:d.score, itemStyle:{color:gradeColor(d.grade)}})),
+      barWidth:'62%',
+      label:{show:true, position:'right', formatter:p=>{const d=data[p.dataIndex];return `${d.score}  ${d.grade}`}, color:'#1f3a5f', fontWeight:600, fontSize:12},
+      emphasis:{itemStyle:{color:'#c9962f'}}
+    }]
+  };
+  rankChart.setOption(opt);
+  rankChart.on('click', p=>{ const d=DIRS.find(x=>x.name===p.name); if(d){ selectDir(d.r); document.getElementById('s-detail').scrollIntoView({behavior:'smooth'});}});
+}
+
+/* --- 详情 --- */
+function selectDir(r){
+  const d = DIRS.find(x=>x.r===r);
+  document.getElementById('detailSelect').value = r;
+  const box = document.getElementById('detailBox');
+  const certTxt = d.cert + (d.certNote? ` <span style="color:#b8c8dd;font-weight:400">${esc(d.certNote)}</span>`:"");
+  box.innerHTML = `
+    <div class="detail-head">
+      <h3>#${d.r}　${esc(d.name)}</h3>
+      <div class="tags">
+        <span class="badge score">${d.score} 分</span>
+        <span class="badge grade">${d.grade} 级</span>
+        <span class="badge lvl">${esc(d.level)}</span>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="field full"><h4>核心判断</h4><p>${esc(d.oneLine)}　·　产业化确定性：<b>${certTxt}</b>　·　长期空间：<b>${esc(d.space)}</b></p></div>
+      <div class="field full"><h4>国家为什么看好</h4><p>${esc(d.why)}</p></div>
+      <div class="field full"><h4>相关政策依据</h4><p class="quote">${esc(d.evidence)}</p></div>
+      <div class="field"><h4>可能受益行业</h4><p>${esc(d.benefitInd)}</p></div>
+      <div class="field"><h4>可能受益企业类型</h4><p>${esc(d.benefitFirm)}</p></div>
+      <div class="field"><h4>产业链拆解</h4><p>${esc(d.chain)}</p></div>
+      <div class="field"><h4>关键词</h4><p>${d.keywords.split('、').map(k=>`<span class="pill">${esc(k)}</span>`).join('')}</p></div>
+      <div class="field"><h4>未来 3–5 年逻辑</h4><p>${esc(d.logic)}</p></div>
+      <div class="field"><h4>主要风险</h4><p style="color:#a4433a">${esc(d.risk)}</p></div>
+      <div class="field full"><h4>对职业选择的启示</h4><p>${esc(d.career)}</p></div>
+    </div>`;
+}
+function buildDetailSelect(){
+  const sel = document.getElementById('detailSelect');
+  sel.innerHTML = DIRS.map(d=>`<option value="${d.r}">#${d.r} ${esc(d.name)}（${d.score}分 ${d.grade}级）</option>`).join('');
+  sel.addEventListener('change', e=>selectDir(+e.target.value));
+}
+
+/* --- 矩阵 --- */
+function renderMatrix(){
+  matrixChart = echarts.init(document.getElementById('matrixChart'));
+  const certX = {"高":80,"中高":62,"中":45,"低":25};
+  const spaceSize = {"极大":34,"大":24,"中":16};
+  const pts = DIRS.map(d=>({
+    name:d.name,
+    value:[certX[d.cert]??45, d.score, spaceSize[d.space]??18],
+    grade:d.grade, cert:d.cert, certNote:d.certNote, space:d.space, score:d.score
+  }));
+  matrixChart.setOption({
+    grid:{left:56, right:30, top:24, bottom:70},
+    tooltip:{formatter:p=>`<b>${p.data.name}</b><br/>政策强度：${p.data.score}（${p.data.grade}级）<br/>产业化确定性：${p.data.cert}${p.data.certNote?' '+p.data.certNote:''}<br/>长期空间：${p.data.space}`},
+    xAxis:{name:'产业化确定性 →', nameLocation:'middle', nameGap:38, min:0, max:100,
+      axisLabel:{formatter:v=>({25:'低',45:'中',62:'中高',80:'高'})[v]||'', color:'#888'},
+      splitLine:{lineStyle:{color:'#eef1f5'}}},
+    yAxis:{name:'政策强度 ↑', nameLocation:'end', nameGap:14, min:60, max:95,
+      axisLabel:{color:'#888'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{
+      type:'scatter', data:pts,
+      symbolSize:d=>d[2],
+      itemStyle:{color:p=>gradeColor(p.data.grade), opacity:.82, borderColor:'#fff', borderWidth:1},
+      label:{show:true, formatter:p=>p.data.name.length>10?p.data.name.slice(0,9)+'…':p.data.name,
+        position:'right', fontSize:10.5, color:'#2b3543'},
+      emphasis:{itemStyle:{color:'#c9962f', opacity:1}},
+      markLine:{silent:true, symbol:'none', lineStyle:{type:'dashed', color:'#c9962f', opacity:.5},
+        data:[{yAxis:80},{xAxis:62}], label:{show:false}}
+    }]
+  });
+  matrixChart.on('click', p=>{const d=DIRS.find(x=>x.name===p.data.name); if(d){selectDir(d.r); document.getElementById('s-detail').scrollIntoView({behavior:'smooth'});}});
+}
+
+/* --- 职业适配表 --- */
+function renderCareer(){
+  const tb = document.querySelector('#careerTable tbody');
+  tb.innerHTML = CAREER.map(c=>`
+    <tr>
+      <td><b>${esc(c.name)}</b></td>
+      <td><span class="rate ${rateClass(c.biz)}">${c.biz}</span></td>
+      <td><span class="rate ${rateClass(c.con)}">${c.con}</span></td>
+      <td><span class="rate ${rateClass(c.res)}">${c.res}</span></td>
+      <td><span class="rate ${rateClass(c.risk)}">${c.risk}</span></td>
+      <td><span class="${barrierClass(c.barrier)}">${c.barrier}</span></td>
+      <td style="min-width:220px">${esc(c.entry)}</td>
+    </tr>`).join('');
+}
+
+/* --- 证据表（搜索+筛选） --- */
+function renderEvidence(){
+  const sel = document.getElementById('evFilter');
+  [...new Set(EVIDENCE.map(e=>e.dir))].forEach(d=>{
+    const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o);
+  });
+  const draw = ()=>{
+    const q=document.getElementById('evSearch').value.trim().toLowerCase();
+    const f=sel.value;
+    const rows = EVIDENCE.filter(e=>{
+      const hit = !q || (e.dir+e.doc+e.org+e.quote+e.support).toLowerCase().includes(q);
+      const fit = !f || e.dir===f;
+      return hit&&fit;
+    });
+    document.querySelector('#evTable tbody').innerHTML = rows.length? rows.map(e=>`
+      <tr>
+        <td><b>${esc(e.dir)}</b></td>
+        <td><span class="src-doc">${esc(e.doc)}</span></td>
+        <td>${esc(e.org)}</td>
+        <td>${esc(e.date)}</td>
+        <td class="quote" style="min-width:280px">${esc(e.quote)}</td>
+        <td style="min-width:150px">${esc(e.support)}</td>
+        <td>${e.url?`<a href="${e.url}" target="_blank" rel="noopener">原文↗</a>`:'—'}</td>
+      </tr>`).join('') : `<tr><td colspan="7" style="text-align:center;color:#888;padding:20px">无匹配结果</td></tr>`;
+    document.getElementById('evCount').textContent = `共 ${rows.length} 条证据`;
+  };
+  document.getElementById('evSearch').addEventListener('input', draw);
+  sel.addEventListener('change', draw);
+  draw();
+}
+
+/* --- 来源表 --- */
+function renderSources(){
+  document.querySelector('#srcTable tbody').innerHTML = SOURCES.map(s=>`
+    <tr>
+      <td><b>${esc(s.name)}</b></td>
+      <td>${esc(s.org)}</td>
+      <td>${esc(s.date)}</td>
+      <td><span class="lvl-tag">${esc(s.lvl)}</span></td>
+      <td style="min-width:240px;color:#3a4757">${esc(s.topic)}</td>
+      <td>${s.core?'<span class="core-yes">核心</span>':'辅助'}</td>
+      <td>${s.url?`<a href="${s.url}" target="_blank" rel="noopener">来源↗</a>`:`<span class="fail">${esc(s.status)}</span>`}</td>
+    </tr>`).join('');
+}
+
+/* --- 导航高亮 + 返回顶部 --- */
+function initNav(){
+  const links=[...document.querySelectorAll('nav.tabs a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ const id='#'+e.target.id;
+      links.forEach(a=>a.classList.toggle('active', a.getAttribute('href')===id)); }});
+  },{rootMargin:'-45% 0px -50% 0px'});
+  secs.forEach(s=>s&&obs.observe(s));
+  const btn=document.getElementById('toTop');
+  window.addEventListener('scroll',()=>{btn.style.display=window.scrollY>500?'block':'none';});
+  btn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+}
+
+window.addEventListener('resize',()=>{rankChart&&rankChart.resize();matrixChart&&matrixChart.resize();});
+document.addEventListener('DOMContentLoaded',()=>{
+  buildDetailSelect(); selectDir(1);
+  renderCareer(); renderEvidence(); renderSources(); initNav();
+  if(window.echarts){ renderRank(); renderMatrix(); }
+  else{
+    document.getElementById('rankChart').innerHTML='<p style="padding:30px;color:#888">图表需联网加载 ECharts（CDN）。当前离线，排名数据见下方各模块。</p>';
+    document.getElementById('matrixChart').innerHTML='<p style="padding:30px;color:#888">图表需联网加载 ECharts（CDN）。</p>';
+  }
+});
+</script>
+</body>
+</html>
